@@ -64,56 +64,94 @@ def compute_fitch(tree, sequences):
     return total_score
 
 
+# def normalize_tree_labels(tree, seq_ids):
+#     fasta_accessions = set(seq_ids)
+
+#     unmatched = []
+#     changed = 0
+#     for term in tree.get_terminals():
+#         name = term.name
+#         if not name:
+#             unmatched.append(name)
+#             continue
+
+#         # Extract accession from tree label (first three underscore tokens)
+#         accession = "_".join(name.split("_")[:3])
+#         if accession in fasta_accessions:
+#             term.name = accession
+#             changed += 1
+#         else:
+#             unmatched.append(name)
+
+#     if changed:
+#         print(f"Normalized {changed} tip labels to match FASTA accessions")
+#     if unmatched:
+#         print(f"Warning: {len(unmatched)} tip labels did not match any FASTA ID; e.g., {unmatched[:5]}")
+
+#     return unmatched
 def normalize_tree_labels(tree, seq_ids):
-    """
-    1. if full tip name is already in seq_ids keep as-is
-    2. use  first whitespace-delimited token
-    3. try simple accession-like regex match from start of name
-    """
     import re
 
     access_re = re.compile(r"^([A-Za-z0-9_.-]+)")
     seq_set = set(seq_ids)
     unmatched = []
     changed = 0
+
     for term in tree.get_terminals():
         name = term.name
         if not name:
             unmatched.append(name)
             continue
+
         if name in seq_set:
-            continue
-        #tokenization at whitespace
+            continue  #exact match
+
+        #1. whitespace-delimited token
         token = name.split()[0]
         if token in seq_set:
             term.name = token
             changed += 1
             continue
-        #regex match
+
+        #2. regex match from start
         m = access_re.match(name)
         if m and m.group(1) in seq_set:
             term.name = m.group(1)
             changed += 1
             continue
-        #split on comma for differences like accession / description
+
+        #3. split on comma
         token2 = name.split(",")[0]
         if token2 in seq_set:
             term.name = token2
             changed += 1
             continue
-        unmatched.append(name)
 
-    #debugging print
+        #4. underscore-delimited tokens (try 3,2,1)
+        for n_tokens in (3, 2, 1):
+            token_n = "_".join(name.split("_")[:n_tokens])
+            if token_n in seq_set:
+                term.name = token_n
+                changed += 1
+                break
+        else:
+            unmatched.append(name)
+
+    #debugging output
     if changed:
         print(f"Normalized {changed} tip labels to match FASTA IDs")
     if unmatched:
         print(f"Warning: {len(unmatched)} tip labels did not match any FASTA ID; e.g., {unmatched[:5]}")
+
     return unmatched
+
 
 def main():
     args = get_args()
     tree = Phylo.read(args.newick_tree, "newick")
-    seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(args.fasta_file, "fasta")}
+    # seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(args.fasta_file, "fasta")}
+    seqs = {rec.id.split("#")[0]: str(rec.seq) for rec in SeqIO.parse(args.fasta_file, "fasta")}
+
     if getattr(args, "normalize_labels", False):
         normalize_tree_labels(tree, seqs.keys())
 
