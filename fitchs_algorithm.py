@@ -63,32 +63,6 @@ def compute_fitch(tree, sequences):
         total_score += score
     return total_score
 
-
-# def normalize_tree_labels(tree, seq_ids):
-#     fasta_accessions = set(seq_ids)
-
-#     unmatched = []
-#     changed = 0
-#     for term in tree.get_terminals():
-#         name = term.name
-#         if not name:
-#             unmatched.append(name)
-#             continue
-
-#         # Extract accession from tree label (first three underscore tokens)
-#         accession = "_".join(name.split("_")[:3])
-#         if accession in fasta_accessions:
-#             term.name = accession
-#             changed += 1
-#         else:
-#             unmatched.append(name)
-
-#     if changed:
-#         print(f"Normalized {changed} tip labels to match FASTA accessions")
-#     if unmatched:
-#         print(f"Warning: {len(unmatched)} tip labels did not match any FASTA ID; e.g., {unmatched[:5]}")
-
-#     return unmatched
 def normalize_tree_labels(tree, seq_ids):
     import re
 
@@ -149,7 +123,6 @@ def normalize_tree_labels(tree, seq_ids):
 def main():
     args = get_args()
     tree = Phylo.read(args.newick_tree, "newick")
-    # seqs = {rec.id: str(rec.seq) for rec in SeqIO.parse(args.fasta_file, "fasta")}
     seqs = {rec.id.split("#")[0]: str(rec.seq) for rec in SeqIO.parse(args.fasta_file, "fasta")}
 
     if getattr(args, "normalize_labels", False):
@@ -158,8 +131,6 @@ def main():
     if args.method == "fitch":
           score = compute_fitch(tree, seqs)
           print("Total Fitch score =", score)
-    # elif args.method == "sankoff":
-    #     sankoff(tree)
     else:
         print(f"Method {args.method} is not supported!")
 
