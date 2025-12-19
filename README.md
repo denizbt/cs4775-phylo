@@ -24,9 +24,10 @@ We describe the computational pipeline and how to run it.
     conda install -c bioconda {iqtree / fastree}
     ```
     - BEAST must be downloaded directly from its source code i.e. [here](https://beast.community/install_on_unix). In our case, BEAST was already installed on the BioHPC cluster.
-4. We provide sample lines of code for running IQ-TREE and FastTree. BEAST
-  - ```iqtree -s 252-fasta-input-file.fas -m AUTO -bb 1000 -nt AUTO```
-  - ``FastTree -nt 252-fasta-input-file.fas > FastTree-252-tree.nwk``
+4. We describe how each phylogenetic reconstruction method was run on the BioHPC cluster (with ex. fasta file):
+  - IQ-TREE [instructions](https://biohpc.cornell.edu/lab/userguide.aspx?a=software&i=494#c): ```mpirun -np 10 /programs/iqtree-2.2.0/bin/iqtree2-mpi -s 252-fasta-input-file.fas -m GTR+G -nt 8```
+  - FastTree [instructions](https://biohpc.cornell.edu/lab/userguide.aspx?a=software&i=195#c): ``FastTree -nt 252-fasta-input-file.fas > FastTree-252-tree.nwk``
+  - BEAST: We used exactly [these instructions](https://biohpc.cornell.edu/lab/userguide.aspx?a=software&i=1207#c) to run it.
 5. We also download the `trees/paper-generated-*` tree files from this paper [Phylogenetic reconstruction of the initial stages of the spread of the SARS-CoV-2 virus in the Eurasian and American continents by analyzing genomic data](https://www.sciencedirect.com/science/article/pii/S0168170221002586). We compare the parsimony scores and pairwise RF-Distances for the trees we generate with these paper generated trees as well.
 6. After the trees are generated (in Newick format), we turn our attention to comparing them. First, we run Fitch's algorithm to calculate parsimony scores (see "Running Fitch's Algorithm" section).
 7. Next, we calculate the Robinson-Fould (RF) distance for each pair of trees that we generated (see "Calculating RF-Distances" section below).
