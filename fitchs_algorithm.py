@@ -5,14 +5,12 @@ from Bio import Phylo, SeqIO
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--method", type=str, default="fitch") # require one of Fitch or Sankoff
+    parser.add_argument("--method", type=str, default="fitch")
     parser.add_argument("--newick-tree", type=str, required=True, help="Path to the input tree (in Newick format)")
     parser.add_argument("--fasta-file", type=str, required=True, help="Path to the input fasta files")
     parser.add_argument("--normalize-labels", action="store_true", help="Try to normalize tree tip labels to match FASTA ids (e.g., strip BEAST descriptions)")
-    # TODO add more arguments for parameters of the parsimony methods
 
     return parser.parse_args()
-
 
 def fitch_score(clade, char_map):
     #collect observed characters (non-missing) among tips in char_map
